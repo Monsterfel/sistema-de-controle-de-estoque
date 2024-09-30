@@ -1,0 +1,84 @@
+SET SQL_SAFE_UPDATES = 0; -- Permite operações de exclusão
+
+-- 1. Dropar o banco de dados se existir e criar um novo
+DROP DATABASE IF EXISTS SistemaControleEstoque;
+CREATE DATABASE SistemaControleEstoque;
+USE SistemaControleEstoque;
+
+-- 2. Criar as tabelas
+-- Tabela para armazenar informações dos fornecedores
+CREATE TABLE Fornecedores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    contato VARCHAR(50),
+    telefone VARCHAR(15)
+);
+
+-- Tabela para armazenar os produtos
+CREATE TABLE Produtos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    quantidade INT NOT NULL,
+    preco DECIMAL(10, 2) NOT NULL,
+    fornecedor_id INT,
+    FOREIGN KEY (fornecedor_id) REFERENCES Fornecedores(id) ON DELETE SET NULL
+);
+
+-- Tabela para armazenar os pedidos de reposição
+CREATE TABLE PedidosReposicao (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    produto_id INT,
+    quantidade INT NOT NULL,
+    data_pedido DATE NOT NULL,
+    status VARCHAR(20),
+    FOREIGN KEY (produto_id) REFERENCES Produtos(id) ON DELETE CASCADE
+);
+
+-- 3. Inserir dados nas tabelas
+-- Inserir dados na tabela Fornecedores
+INSERT INTO Fornecedores (nome, contato, telefone) VALUES
+('Fornecedor A', 'João Silva', '123456789'),
+('Fornecedor B', 'Maria Oliveira', '987654321'),
+('Fornecedor C', 'Pedro Santos', '456789123');
+
+-- Inserir dados na tabela Produtos
+INSERT INTO Produtos (nome, quantidade, preco, fornecedor_id) VALUES
+('Produto 1', 50, 10.00, 1),
+('Produto 2', 30, 15.50, 2),
+('Produto 3', 20, 5.25, 1);
+
+-- Inserir dados na tabela PedidosReposicao
+INSERT INTO PedidosReposicao (produto_id, quantidade, data_pedido, status) VALUES
+(1, 20, '2024-09-01', 'Pendente'),
+(2, 15, '2024-09-02', 'Completo');
+
+-- 4. Consultar dados
+-- Consultar todos os produtos em estoque
+SELECT * FROM Produtos;
+
+-- Consultar pedidos de reposição feitos
+SELECT * FROM PedidosReposicao;
+
+-- Consultar informações sobre os fornecedores
+SELECT * FROM Fornecedores;
+
+-- Consultar produtos e seus fornecedores
+SELECT p.nome AS produto, f.nome AS fornecedor
+FROM Produtos p
+JOIN Fornecedores f ON p.fornecedor_id = f.id;
+
+-- 5. Atualizar a quantidade de um produto após receber um novo pedido
+UPDATE Produtos
+SET quantidade = quantidade + 20
+WHERE id = 1; -- Supondo que recebemos 20 unidades do Produto 1
+
+-- 6. Excluir um produto descontinuado
+DELETE FROM Produtos
+WHERE id = 3; -- Excluindo o Produto 3
+
+-- 7. Excluir um fornecedor que não faz mais parte da empresa
+-- Primeiro, exclua os produtos associados ao fornecedor
+DELETE FROM Produtos WHERE fornecedor_id = 2; -- Excluindo produtos do Fornecedor B
+
+-- Agora, exclua o fornecedor
+DELETE FROM Fornecedores WHERE id = 2; -- Excluindo o Fornecedor B
